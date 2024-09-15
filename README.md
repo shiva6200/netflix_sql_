@@ -46,3 +46,98 @@ SELECT
 FROM netflix
 GROUP BY 1;
 ```
+**Objective:** Determine the distribution of content types on Netflix.
+
+
+
+
+### 2. Find the Most Common Rating for Movies and TV Shows
+
+```sql
+WITH RatingCounts AS (
+    SELECT 
+        type,
+        rating,
+        COUNT(*) AS rating_count
+    FROM netflix
+    GROUP BY type, rating
+),
+RankedRatings AS (
+    SELECT 
+        type,
+        rating,
+        rating_count,
+        RANK() OVER (PARTITION BY type ORDER BY rating_count DESC) AS rank
+    FROM RatingCounts
+)
+SELECT 
+    type,
+    rating AS most_frequent_rating
+FROM RankedRatings
+WHERE rank = 1;
+```
+**Objective:** Identify the most frequently occurring rating for each type of content.
+
+
+
+
+### 3. List All Movies Released in a Specific Year (e.g., 2020)
+
+
+```sql
+SELECT * 
+FROM netflix
+WHERE release_year = 2020;
+```
+**Objective:** Retrieve all movies released in a specific year.
+
+
+### 4. Find the Top 5 Countries with the Most Content on Netflix
+
+```sql
+SELECT * 
+FROM
+(
+    SELECT 
+        UNNEST(STRING_TO_ARRAY(country, ',')) AS country,
+        COUNT(*) AS total_content
+    FROM netflix
+    GROUP BY 1
+) AS t1
+WHERE country IS NOT NULL
+ORDER BY total_content DESC
+LIMIT 5;
+```
+**Objective:** Identify the top 5 countries with the highest number of content items.
+
+
+
+### 5. Identify the Longest Movie
+
+```sql
+SELECT 
+    *
+FROM netflix
+WHERE type = 'Movie'
+ORDER BY SPLIT_PART(duration, ' ', 1)::INT DESC;
+```
+**Objective:** Find the movie with the longest duration.
+
+
+
+
+### 6. Find Content Added in the Last 5 Years
+
+```sql
+SELECT *
+FROM netflix
+WHERE TO_DATE(date_added, 'Month DD, YYYY') >= CURRENT_DATE - INTERVAL '5 years';
+
+```
+**Objective:** Retrieve content added to Netflix in the last 5 years.
+
+
+
+
+
+
